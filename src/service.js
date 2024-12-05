@@ -62,7 +62,6 @@ export async function downloadPayments() {
                 worksheet.getCell(clientCellDirection).value = new String(payment.client)
                 worksheet.getCell(blockCellDirection).value = parseInt(payment.block)
                 worksheet.getCell(validationCellDirection).value = new String(payment.validation)
-                worksheet.getCell(validationDateCellDirection).value = payment.done_at
             })
         })
 

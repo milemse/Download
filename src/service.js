@@ -57,7 +57,6 @@ export async function downloadPayments() {
                 const clientCellDirection = `${linker_validation.client.column[sheetId - 1]}${row}`
                 const blockCellDirection = `${linker_validation.block.column[sheetId - 1]}${row}`
                 const validationCellDirection = `${linker_validation.validation.column[sheetId - 1]}${row}`
-                const validationDateCellDirection = `${linker_validation.validation_date.column[sheetId - 1]}${row}`
 
                 worksheet.getCell(clientCellDirection).value = new String(payment.client)
                 worksheet.getCell(blockCellDirection).value = parseInt(payment.block)

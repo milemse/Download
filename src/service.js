@@ -65,6 +65,8 @@ export async function downloadPayments() {
         })
 
         await workbook.xlsx.writeFile(filePath.replace('.xlsx', '_VALIDADO.xlsx'))
+        const downloadedPayments = `update main.payment set downloaded = true where to_download = true`
+        await client.query(downloadedPayments)
         const updateToDownloadPayment = `update main.payment set to_download = false where to_download = true`
         await client.query(updateToDownloadPayment)
     }

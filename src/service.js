@@ -49,7 +49,7 @@ export async function downloadPayments() {
                 return parseInt(sheet) === (sheetId - 1)
             })
 
-            currentValidatedPayments.forEach(async payment => {
+            currentValidatedPayments.forEach(payment => {
                 const bookInformation = payment.reference.split('-').pop()
                 const reference = payment.reference.split('-').shift()
                 const [ _, row ] = bookInformation.split(':')

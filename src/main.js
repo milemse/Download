@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }))
 
 app.get('/', async (req, res) => {
     await downloadPayments()
-    res.json({ code: 'OK', message: 'Pagos exportados correctamente' })
+    res.json({ code: 'OK', message: 'Pagos descargados correctamente' })
 })
 
 app.get('/reports', async (req, res) => {

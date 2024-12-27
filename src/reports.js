@@ -6,6 +6,4 @@ export async function generateReports() {
     const command = 'python3 /Users/fmontoya/Gasu/Reporte/main.py'
     
     const { stdout, stderr } = await exec(command)
-    console.log(stdout)
-    console.log(stderr)
 }

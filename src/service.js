@@ -18,7 +18,12 @@ export async function downloadPayments() {
 
     await client.connect()
 
-    const selectToDownloadPayments = `select acc.account_id, py.payment_id, cd.block, (cd.name || ' ' || cd.building || ' | ' || cl.department) as client, acc.reference_bbva as reference, py.description, py.reference as payment_reference, py.done_at from main.condominium cd join main.client cl on cd.condominium_id = cl.condominium_id join main.account acc on cl.client_id = acc.client_id join main.payment py on acc.account_id = py.account_id where to_download = true`
+    const selectToDownloadPayments = `select acc.account_id, py.payment_id, cd.block, (cd.name || ' ' || cd.building || ' | ' || cl.department) as client, acc.reference_bbva as reference, py.description, py.reference as payment_reference, py.done_at
+from main.condominium cd
+join main.client cl on cd.condominium_id = cl.condominium_id
+join main.account acc on cl.client_id = acc.client_id
+join main.payment py on acc.account_id = py.account_id where validated = true and to_download = true
+and py.done_at >= (select initial from main.period where period_id = ${obj.period_id}) and py.done_at <= (select final from main.period where period_id = ${obj.period_id})`
     const query = await client.query(selectToDownloadPayments)
     const result = query.rows
 
@@ -36,11 +41,9 @@ export async function downloadPayments() {
             validatedPayments.push(validatedPayment)
         }
 
-        const workbook = new ExcelJS.Workbook()
-        
+        const workbook = new ExcelJS.Workbook()        
         await workbook.xlsx.readFile(filePath)
 
-        // sheeId start at 1
         workbook.eachSheet((worksheet, sheetId) => {
             const currentValidatedPayments = validatedPayments.filter(payment => {
                 const bookInformation = payment.reference.split('-').pop()
@@ -50,17 +53,19 @@ export async function downloadPayments() {
             })
 
             currentValidatedPayments.forEach(payment => {
-                const bookInformation = payment.reference.split('-').pop()
-                const reference = payment.reference.split('-').shift()
-                const [ _, row ] = bookInformation.split(':')
+                if(sheetId < linker_validation.client.column.length){
+                    const bookInformation = payment.reference.split('-').pop()
+                    const reference = payment.reference.split('-').shift()
+                    const [ _, row ] = bookInformation.split(':')
 
-                const clientCellDirection = `${linker_validation.client.column[sheetId - 1]}${row}`
-                const blockCellDirection = `${linker_validation.block.column[sheetId - 1]}${row}`
-                const validationCellDirection = `${linker_validation.validation.column[sheetId - 1]}${row}`
+                    const clientCellDirection = `${linker_validation.client.column[sheetId - 1]}${row}`
+                    const blockCellDirection = `${linker_validation.block.column[sheetId - 1]}${row}`
+                    const validationCellDirection = `${linker_validation.validation.column[sheetId - 1]}${row}`
 
-                worksheet.getCell(clientCellDirection).value = new String(payment.client)
-                worksheet.getCell(blockCellDirection).value = parseInt(payment.block)
-                worksheet.getCell(validationCellDirection).value = new String(payment.validation)
+                    worksheet.getCell(clientCellDirection).value = new String(payment.client)
+                    worksheet.getCell(blockCellDirection).value = parseInt(payment.block)
+                    worksheet.getCell(validationCellDirection).value = new String(payment.validation)
+                }
             })
         })
 

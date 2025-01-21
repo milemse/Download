@@ -34,6 +34,7 @@ for col in sheet.iter_cols(min_col=1, max_col=40):
 
 # Creamos la conexion a la base de datos
 # conn = psycopg2.connect(dbname='provee', user='fmontoya', host='localhost', password='NZSCx81!')
+conn = psycopg2.connect(dbname='test_prod', user='postgres', host='192.168.1.174', password='01001Gasu')
 
 index = 1
 # Creamos la consulta de lectura de tanques

@@ -18,12 +18,7 @@ export async function downloadPayments() {
 
     await client.connect()
 
-    const selectToDownloadPayments = `select acc.account_id, py.payment_id, cd.block, (cd.name || ' ' || cd.building || ' | ' || cl.department) as client, acc.reference_bbva as reference, py.description, py.reference as payment_reference, py.done_at
-from main.condominium cd
-join main.client cl on cd.condominium_id = cl.condominium_id
-join main.account acc on cl.client_id = acc.client_id
-join main.payment py on acc.account_id = py.account_id where validated = true and to_download = true
-and py.done_at >= (select initial from main.period where period_id = ${obj.period_id}) and py.done_at <= (select final from main.period where period_id = ${obj.period_id})`
+    const selectToDownloadPayments = `select acc.account_id, py.payment_id, cd.block, cl.client as client, acc.reference_bbva as reference, py.description, py.reference as payment_reference, py.done_at from main.condominium cd join main.building bd on cd.condominium_id = bd.condominium_id join main.client cl on cl.building_id = bd.building_id join main.account acc on cl.client_id = acc.client_id join main.payment py on acc.account_id = py.account_id where validated = true and to_download = true and py.done_at >= (select initial from main.period where period_id = ${obj.period_id}) and py.done_at <= (select final from main.period where period_id = ${obj.period_id})`
     const query = await client.query(selectToDownloadPayments)
     const result = query.rows
 
@@ -70,7 +65,6 @@ and py.done_at >= (select initial from main.period where period_id = ${obj.perio
         })
 
         await workbook.xlsx.writeFile(filePath.replace('.xlsx', '_VALIDADO.xlsx'))
-        const downloadedPayments = `update main.payment set downloaded = true where to_download = true`
         await client.query(downloadedPayments)
         const updateToDownloadPayment = `update main.payment set to_download = false where to_download = true`
         await client.query(updateToDownloadPayment)

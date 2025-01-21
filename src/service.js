@@ -18,7 +18,7 @@ export async function downloadPayments() {
 
     await client.connect()
 
-    const selectToDownloadPayments = `select acc.account_id, py.payment_id, cd.block, cl.client as client, acc.reference_bbva as reference, py.description, py.reference as payment_reference, py.done_at from main.condominium cd join main.building bd on cd.condominium_id = bd.condominium_id join main.client cl on cl.building_id = bd.building_id join main.account acc on cl.client_id = acc.client_id join main.payment py on acc.account_id = py.account_id where validated = true and to_download = true and py.done_at >= (select initial from main.period where period_id = ${obj.period_id}) and py.done_at <= (select final from main.period where period_id = ${obj.period_id})`
+    const selectToDownloadPayments = `select acc.account_id, py.payment_id, cd.block, cl.client as client, cl.client_id, acc.reference_bbva as reference, py.description, py.reference as payment_reference, py.done_at, tx.tax_id from main.condominium cd join main.building bd on cd.condominium_id = bd.condominium_id join main.client cl on cl.building_id = bd.building_id left join main.tax tx on cl.client_id = tx.client_id join main.account acc on cl.client_id = acc.client_id join main.payment py on acc.account_id = py.account_id where validated = true and to_download = true and py.done_at >= (select initial from main.period where period_id = ${obj.period_id}) and py.done_at <= (select final from main.period where period_id = ${obj.period_id})`
     const query = await client.query(selectToDownloadPayments)
     const result = query.rows
 
@@ -30,7 +30,8 @@ export async function downloadPayments() {
                 block: payment.block,
                 validation: 'OK',
                 reference: payment.payment_reference,
-                done_at: payment.done_at
+                done_at: payment.done_at,
+                tax_id: payment.tax_id
             }
 
             validatedPayments.push(validatedPayment)
@@ -56,16 +57,21 @@ export async function downloadPayments() {
                     const clientCellDirection = `${linker_validation.client.column[sheetId - 1]}${row}`
                     const blockCellDirection = `${linker_validation.block.column[sheetId - 1]}${row}`
                     const validationCellDirection = `${linker_validation.validation.column[sheetId - 1]}${row}`
+                    const taxCellDirection = `${linker_validation.tax.column[sheetId - 1]}${row}`
 
                     worksheet.getCell(clientCellDirection).value = new String(payment.client)
                     worksheet.getCell(blockCellDirection).value = parseInt(payment.block)
                     worksheet.getCell(validationCellDirection).value = new String(payment.validation)
+
+                    if(payment.tax_id)
+                        worksheet.getCell(taxCellDirection).value = 'R CF'
+                    else
+                        worksheet.getCell(taxCellDirection).value = 'R SF'
                 }
             })
         })
 
         await workbook.xlsx.writeFile(filePath.replace('.xlsx', '_VALIDADO.xlsx'))
-        await client.query(downloadedPayments)
         const updateToDownloadPayment = `update main.payment set to_download = false where to_download = true`
         await client.query(updateToDownloadPayment)
     }

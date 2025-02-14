@@ -1,0 +1,22 @@
+{
+    "client": {
+        "name": "cliente",
+        "column": [8, 8, 14, 14, 8, 8]
+    },
+    "block": {
+        "name": "bloque",
+        "column": [13, 13, 21, 21, 13, 13]
+    },
+    "validation": {
+        "name": "validacion",
+        "column": [14, 14, 20, 20, 14, 14]
+    },
+    "validation_date": {
+        "name": "fechavalidacion",
+        "column": [15, 15, 22, 22, 15, 15]
+    },
+   "tax": {
+        "name": "residencial/suministro",
+        "column": [7, 7, 15, 15, 7, 7]
+    }
+}
